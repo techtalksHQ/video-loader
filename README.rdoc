@@ -1,3 +1,3 @@
-= VideoLoader
+= VideoLoader Plugin
 
-This project rocks and uses MIT-LICENSE.
+Loads videos from various sources into Discourse.
