@@ -1,3 +1,5 @@
 = VideoLoader Plugin
 
 Loads videos from various sources into Discourse.
+
+Py Video API: http://richard.readthedocs.org/en/latest/admin/api.html#videos
