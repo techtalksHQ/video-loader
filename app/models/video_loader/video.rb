@@ -1,6 +1,6 @@
 module VideoLoader
   class Video < ActiveRecord::Base
     belongs_to :publisher
-    belongs_to_and_has_many :video_loader_presenter
+    has_and_belongs_to_many :presenters
   end
 end
