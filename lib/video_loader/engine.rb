@@ -15,6 +15,7 @@ module VideoLoader
     config.to_prepare do
       # inject our dependencies
       # runs once in production, before every request in development
+      Topic.send(:include, VideoLoader::AddVideoToTopic)
       end
 
   end
