@@ -7,7 +7,7 @@ module Jobs
       if response.status == 200
         body = JSON.parse(response.body)
         parse_response(body["results"])
-        Jobs.enqueue(:load_py_videos, body['next'] if body['next'])
+        # Jobs.enqueue(:load_py_videos, body['next'] if body['next'])
       end
     end
 
