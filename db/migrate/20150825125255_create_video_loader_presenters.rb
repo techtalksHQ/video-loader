@@ -3,7 +3,7 @@ class CreateVideoLoaderPresenters < ActiveRecord::Migration
     create_table :video_loader_presenters do |t|
       t.string :name
       t.string :image_url
-      t.string :description
+      t.text :description
 
       t.timestamps
     end

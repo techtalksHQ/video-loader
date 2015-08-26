@@ -4,7 +4,7 @@ module VideoLoader
 
    module AddVideoToTopic
     def self.included(klass)
-      klass.has_one :video_id, class_name: '::VideoLoader::Video'
+      klass.has_one :video, class_name: '::VideoLoader::Video'
     end
   end
 

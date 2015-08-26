@@ -4,7 +4,7 @@ class CreateVideoLoaderVideos < ActiveRecord::Migration
       t.string :title
       t.string :url
       t.string :thumbnail_url
-      t.string :description
+      t.text :description
       t.references :publisher, index: true
 
       t.timestamps

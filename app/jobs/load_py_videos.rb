@@ -41,7 +41,7 @@ module Jobs
       results.each do |result|
         video = get_video(result['source_url'])
         video.title = result['title']
-        video.description = result['description']
+        video.description = result['summary']
         video.thumbnail_url = result['thumbnail_url']
         video.presenters = result['speakers'].map { |s| get_presenter(s)}
         video.save
@@ -59,7 +59,7 @@ module Jobs
                 :skip_validations => skip_validations}
       post = PostCreator.new(User.first, args).create
       post.topic.custom_fields = custom_fields
-      post.topic.video_id = video.id
+      post.topic.video = video
       post.topic.save_custom_fields(true)
     end
   end
