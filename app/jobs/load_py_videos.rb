@@ -14,14 +14,18 @@ module Jobs
 
     def build_publisher(url)
       #TODO: instead of include use regex
-      if url.include?("youtube")
+      url_re = /^https?:\/\/(youtu|vimeo)/
+      source = url_re.match(url)
+      if source && source[1] == "youtu"
         response = Excon.get("https://youtube.com/oembed?url=#{url}&format=json")
         body = JSON.parse(response.body)
         name = body["author_name"]
         get_presenter(name)
 
-      elsif url.include?("vimeo")
-
+      elsif source && source[1] == "vimeo"
+        #Go get data from Vimeo
+      else
+        return
       end
     end
 
