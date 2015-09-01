@@ -4,6 +4,7 @@ module VideoLoader
 
     config.after_initialize do
       require_relative '../../app/jobs/load_py_videos'
+      require_relative '../../app/serializers/video_serializer'
       Discourse::Application.routes.append do
         mount VideoLoader::Engine, at: 'video_loader'
         # mounting answers acceptance on a different path to stay API compatible
