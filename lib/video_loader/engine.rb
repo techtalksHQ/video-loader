@@ -16,6 +16,7 @@ module VideoLoader
       # inject our dependencies
       # runs once in production, before every request in development
       Topic.send(:include, VideoLoader::AddVideoToTopic)
+      TopicViewSerializer.send(:include, VideoLoader::ExtendTopicViewSerializer)
       end
 
   end

@@ -8,4 +8,18 @@ module VideoLoader
     end
   end
 
+  module ExtendTopicViewSerializer
+    def self.included(klass)
+      klass.attributes :video
+    end
+
+    def video
+      VideoLoader::VideoSerializer.new(object.topic.video, root: false, scope: scope)
+    end
+
+    def include_video?
+      object.topic.video
+    end
+  end
+
 end
