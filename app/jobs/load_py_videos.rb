@@ -27,29 +27,32 @@ module Jobs
                                   :title => result['title'],
                                   :description => result['summary'],
                                   :thumbnail_url => result['thumbnail_url'],
-                                  :presenters => result['speakers'].map { |s| get_presenter(s)})
+                                  :presenters => result['speakers'].map { |s| get_presenter(s)},
+                                  :publisher => build_publisher(result['source_url']))
     end
 
 
     #TODO: Move all of this into its own class:
 
     def build_publisher(url)
-      url_re = /^https?:\/\/(youtu|vimeo)/
+      url_re = /^https?:\/\/w?w?w?\.?(youtu|vimeo)/
       source = url_re.match(url)
       if source && source[1] == "youtu"
-        response = Excon.get("https://youtube.com/oembed?url=#{url}&format=json")
-        body = JSON.parse(response.body)
-        name = body["author_name"]
-        get_presenter(name)
+        response = Excon.get("https://www.youtube.com/oembed?url=#{url}&format=json")
+        if response.status == 200
+          body = JSON.parse(response.body)
+          name = body["author_name"]
+          get_publisher(name)
+        end
 
       elsif source && source[1] == "vimeo"
-        #Go get data from Vimeo
+        return
       else
         return
       end
     end
 
-    def get_publisher(name, description="", image="")
+    def get_publisher(name)
       ::VideoLoader::Publisher.where(:name => name).first_or_create
     end
 
