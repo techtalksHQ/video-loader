@@ -10,13 +10,14 @@ module Jobs
         body = JSON.parse(response.body)
         results = body['results']
 
-        if body["next"] && !video_exists?(results[-1]['source_url'])
-          ::Jobs.enqueue(:load_py_videos, body['next'])
-        end
+        # if body["next"] && !video_exists?(results[-1]['source_url'])
+        #   ::Jobs.enqueue(:load_py_videos, body['next'])
+        # end
 
         results.each do|result|
           if !video_exists?(result['source_url'])
-            build_topic(parse_response(result), result)
+            language = "LANG_" + result['language']
+            build_topic(parse_response(result), result, [language, 'python', result['category']])
           end
         end
       end
@@ -64,8 +65,8 @@ module Jobs
       !!::VideoLoader::Video.where(:url => url).first
     end
 
-    def build_topic(video, raw_data, category="uncategorized", skip_validations=true)
-      custom_fields = {"raw_data": raw_data}
+    def build_topic(video, raw_data, tags, category="uncategorized", skip_validations=true)
+      custom_fields = {"raw_data": raw_data, "tags": tags}
       args = {"title": video.title,
                 :topic_id => nil,
                 "raw": video.description,
