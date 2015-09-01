@@ -3,17 +3,37 @@ module Jobs
   class LoadPyVideos < ::Jobs::Base
 
     def execute(url)
-        response = Excon.get("http://pyvideo.org/api/v2/video/?ordering=-added")
+      # "http://pyvideo.org/api/v2/video/?ordering=-added"
+      response = Excon.get(url)
+
       if response.status == 200
         body = JSON.parse(response.body)
-        # puts body["results"]
-        parse_response(body["results"])
-        # Jobs.enqueue(:load_py_videos, body['next'] if body['next'])
+        results = body['results']
+
+        if body["next"] && !video_exists?(results[-1]['source_url'])
+          ::Jobs.enqueue(:load_py_videos, body['next'])
+        end
+
+        results.each do|result|
+          if !video_exists?(result['source_url'])
+            build_topic(parse_response(result), result)
+          end
+        end
       end
     end
 
+    def parse_response(result)
+      ::VideoLoader::Video.create(:url => result['source_url'],
+                                  :title => result['title'],
+                                  :description => result['summary'],
+                                  :thumbnail_url => result['thumbnail_url'],
+                                  :presenters => result['speakers'].map { |s| get_presenter(s)})
+    end
+
+
+    #TODO: Move all of this into its own class:
+
     def build_publisher(url)
-      #TODO: instead of include use regex
       url_re = /^https?:\/\/(youtu|vimeo)/
       source = url_re.match(url)
       if source && source[1] == "youtu"
@@ -37,21 +57,8 @@ module Jobs
       ::VideoLoader::Presenter.where(:name => name).first_or_create
     end
 
-    def get_video(url)
-      ::VideoLoader::Video.where(:url => url).first_or_create
-    end
-
-    def parse_response(results)
-      results.each do |result|
-        video = get_video(result['source_url'])
-        video.title = result['title']
-        video.description = result['summary']
-        video.thumbnail_url = result['thumbnail_url']
-        video.presenters = result['speakers'].map { |s| get_presenter(s)}
-        video.save
-
-        build_topic(video, result)
-      end
+    def video_exists?(url)
+      !!::VideoLoader::Video.where(:url => url).first
     end
 
     def build_topic(video, raw_data, category="uncategorized", skip_validations=true)
@@ -63,8 +70,9 @@ module Jobs
                 :skip_validations => skip_validations}
       post = PostCreator.new(User.first, args).create
       post.topic.custom_fields = custom_fields
-      post.topic.video = video
       post.topic.save_custom_fields(true)
+      post.topic.video = video
+      post.save
     end
   end
 end
