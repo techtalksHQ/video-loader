@@ -2,24 +2,28 @@ module Jobs
 
   class LoadPyVideos < ::Jobs::Base
 
-    def execute(url)
+    def execute(args)
       # "http://pyvideo.org/api/v2/video/?ordering=-added&page=5"
-      response = Excon.get(url)
+      response = Excon.get(args[:url])
 
       if response.status == 200
         body = JSON.parse(response.body)
         results = body['results']
 
-        # if body["next"] && !video_exists?(results[-1]['source_url'])
-        #   ::Jobs.enqueue(:load_py_videos, body['next'])
-        # end
+        if body["next"] && !video_exists?(results[-1]['source_url'])
+          Jobs.enqueue(:load_py_videos, url: body['next'])
+        end
 
         results.each do|result|
-          if !VideoLoader::video_exists?(result['source_url'])
+          if !video_exists?(result['source_url'])
             parse_response(result)
           end
         end
       end
+    end
+
+    def video_exists?(url)
+      !!::VideoLoader::Video.where(:source_url => url).first
     end
 
     def parse_response(result)
