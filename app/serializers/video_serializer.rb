@@ -2,7 +2,7 @@ require_dependency "application_serializer"
 
 module VideoLoader
   class VideoSerializer < ApplicationSerializer
-    attributes :id, :title, :description, :url, :thumbnail_url, :source, :mp4_url, :ogv_url, :flv_url
+    attributes :id, :title, :description, :source_url, :thumbnail_url, :sources
     attribute :publisher, :key => :publisher
     attribute :presenters, :key => :presenters
 
@@ -12,6 +12,10 @@ module VideoLoader
 
     def include_publisher?
       object.publisher
+    end
+
+    def sources
+      JSON.parse(object.sources)
     end
   end
 end
