@@ -16,7 +16,7 @@ module Jobs
 
         results.each do|result|
           if !video_exists?(result['source_url'])
-            language = "LANG_" + result['language']
+            language = "lang_" + result['language']
             build_topic(parse_response(result), result, [language, 'python', result['category']])
           end
         end
@@ -28,28 +28,44 @@ module Jobs
                                   :title => result['title'],
                                   :description => result['summary'],
                                   :thumbnail_url => result['thumbnail_url'],
+                                  :mp4_url => result["video_mp4_url"],
+                                  :flv_url => result["video_flv_url"],
+                                  :ogv_url => result["video_ogv_url"],
+                                  :source => get_source(result['source_url']),
                                   :presenters => result['speakers'].map { |s| get_presenter(s)},
                                   :publisher => build_publisher(result['source_url']))
     end
 
 
     #TODO: Move all of this into its own class:
+    def get_source(url)
+      url_re = /^https?:\/\/w?w?w?\.?(youtu|vimeo)/
+      source = url_re.match(url)
+
+      if source && source[1] == "youtu"
+        return "youtube"
+      elsif source && source[1] == "vimeo"
+        return "vimeo"
+      else
+        return "other"
+      end
+    end
 
     def build_publisher(url)
       url_re = /^https?:\/\/w?w?w?\.?(youtu|vimeo)/
       source = url_re.match(url)
 
-      if source && source[1] == "youtu"
+      if source == "youtube"
         response = Excon.get("https://www.youtube.com/oembed?url=#{url}&format=json")
-      elsif source && source[1] == "vimeo"
+      elsif source == "vimeo"
         response = Excon.get("https://vimeo.com/api/oembed.json?url=#{url}")
       else
         return
       end
 
       if response.status == 200
-          body = JSON.parse(response.body)
-          get_publisher(body["author_name"], body["author_url"])
+        body = JSON.parse(response.body)
+        get_publisher(body["author_name"], body["author_url"])
       end
     end
 
