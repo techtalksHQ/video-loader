@@ -3,7 +3,7 @@ require File.expand_path('../video_loader/engine', __FILE__)
 module VideoLoader
 
   def self.video_exists?(url)
-      !!::VideoLoader::Video.where(:url => url).first
+      !!::VideoLoader::Video.where(:source_url => url).first
   end
 
    module AddVideoToTopic

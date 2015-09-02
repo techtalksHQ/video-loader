@@ -1,26 +1,26 @@
 module VideoLoader
   class VideoTopicBuilder
 
-    def initialize(tag, category, language, presenters, params)
+    def initialize(tag, category, language, presenters, params, sources)
       @tag = tag
       @params = params
       @category = category
       @language = language
       @presenters = presenters
+      @sources = sources || []
+      @sources.to_a.push({:url => @params[:source_url], :type => get_source(@params[:source_url]), :download_only => false})
     end
 
     def create
-      if !VideoLoader::video_exists?(@params['url'])
-        video = ::VideoLoader::Video.create(:url => @params['url'],
-                                    :title => @params['title'],
-                                    :description => @params['description'],
-                                    :thumbnail_url => @params['thumbnail_url'],
-                                    :mp4_url => @params["mp4_url"],
-                                    :flv_url => @params["flv_url"],
-                                    :ogv_url => @params["ogv_url"],
-                                    :source => get_source(@params['url']),
-                                    :presenters => @presenters.map { |s| get_presenter(s)},
-                                    :publisher => build_publisher(@params['url']))
+      if !VideoLoader::video_exists?(@params[:source_url])
+        video = ::VideoLoader::Video.create(:source_url => @params[:source_url],
+                                            :title => @params[:title],
+                                            :description => @params[:description],
+                                            :thumbnail_url => @params[:thumbnail_url],
+                                            :sources => JSON.generate(@sources),
+                                            :presenters => @presenters.map { |s| get_presenter(s)},
+                                            :publisher => build_publisher(@params[:source_url]))
+        video.save
         build_topic(video, @params, [@language, @category, @tag])
       end
     end
