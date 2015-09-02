@@ -2,6 +2,10 @@ require File.expand_path('../video_loader/engine', __FILE__)
 
 module VideoLoader
 
+  def self.video_exists?(url)
+      !!::VideoLoader::Video.where(:url => url).first
+  end
+
    module AddVideoToTopic
     def self.included(klass)
       klass.has_one :video, class_name: '::VideoLoader::Video'
