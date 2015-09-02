@@ -38,23 +38,25 @@ module Jobs
     def build_publisher(url)
       url_re = /^https?:\/\/w?w?w?\.?(youtu|vimeo)/
       source = url_re.match(url)
+
       if source && source[1] == "youtu"
         response = Excon.get("https://www.youtube.com/oembed?url=#{url}&format=json")
-        if response.status == 200
-          body = JSON.parse(response.body)
-          name = body["author_name"]
-          get_publisher(name)
-        end
-
       elsif source && source[1] == "vimeo"
-        return
+        response = Excon.get("https://vimeo.com/api/oembed.json?url=#{url}")
       else
         return
       end
+
+      if response.status == 200
+          body = JSON.parse(response.body)
+          get_publisher(body["author_name"], body["author_url"])
+      end
     end
 
-    def get_publisher(name)
-      ::VideoLoader::Publisher.where(:name => name).first_or_create
+    def get_publisher(name, url)
+      publisher = ::VideoLoader::Publisher.where(:name => name).first_or_create
+      publisher.url = url
+      publisher.save
     end
 
     def get_presenter(name)
